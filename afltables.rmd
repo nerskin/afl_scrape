@@ -30,14 +30,29 @@ get_season_results <- function(year){
   season <- read_html(url)
   results <- html_table(season,fill=TRUE)
   results <- results %>%
-  keep(~all(dim(.x)==c(2,4))) %>%
-  map(process_match_description)
-results <- bind_rows(results)
-results
+  keep(~all(dim(.x)==c(2,4))|all(dim(.x)==c(1,2))|all(dim(.x)==c(1,1)))
+  i <- 1
+  output <- list()
+  round <- ''
+  for (result in results){
+	  if (all(dim(result)==c(1,2))){
+		  round <- result[1,1]
+	  }
+	  if (all(dim(result) == c(1,1))){
+		  round <- result[1,1]
+	  }
+	  if (all(dim(result)==c(2,4))){
+		output[[i]] <- process_match_description(result)
+	  	output[[i]]$round <- round
+	  	i <- i+1
+	  }
+  }  
+bind_rows(output)
 }
 ```
 
 ```{r}
 results <- map(2010:2018,get_season_results) %>%
   bind_rows
+as.data.frame(results)
 ```
